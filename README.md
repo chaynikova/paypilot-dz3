@@ -8,7 +8,7 @@
 docker compose run --rm eval --set golden --profile clean
 ```
 
-`set_hash`: `8fcf774bf7fc`
+`set_hash`: `8d746efe4559` (версія 2 набору; версія 1 — `8fcf774bf7fc`)
 
 ## Retrieval-кейси
 | id | Джерело | Файл і рядок корпусу |
@@ -17,11 +17,11 @@ docker compose run --rm eval --set golden --profile clean
 | RET-H02 | скарга C-14 | disputes.md, ## Reason codes and chargeback windows, рядок duplicate_charge |
 | RET-H03 | вправа 1 лабораторної | tariffs.md, ## FX spreads by tier, рядок Tier 3 |
 | RET-H04 | вправа 2 лабораторної | limits.md, ## Daily and monthly limits by tier, рядок Tier 2 |
-| RET-H05 | корпус | tariffs.md, ## Transfer fees by type, рядок SEPA |
-| RET-H06 | корпус | tariffs.md, ## Transfer fees by type, рядок Card payment |
+| RET-H05 | корпус | limits-operations.md, ## Tier changes |
+| RET-H06 | корпус | complaints.md, ## Acknowledgement and resolution |
 | RET-H07 | корпус | limits.md, ## Daily and monthly limits by tier, рядок Tier 1 |
 | RET-H08 | корпус | limits.md, ## Daily and monthly limits by tier, рядок Tier 3 |
-| RET-H09 | корпус | disputes.md, ## Reason codes and chargeback windows, рядок unauthorized_debit |
+| RET-H09 | корпус | cards.md, ## Replacement |
 | RET-H10 | корпус | disputes.md, ## Reason codes and chargeback windows, рядок service_not_rendered |
 | RET-H11 | корпус | transfers.md, ## Cut-off times |
 | RET-H12 | корпус | fx-operations.md, ## Allowance accounting |
@@ -48,3 +48,24 @@ docker compose run --rm eval --set golden --profile clean
 - RET-H05 і RET-H06 на lesson-04 зелені, хоча retrieval-шар не працював: рівень 3 перевіряє лише текст відповіді, а не те, звідки він узявся. Щоб кейс ловив саме retrieval, йому потрібна ще перевірка, що в трейсі є `search_knowledge_base` з потрібним фрагментом, — це рівень перевірки інструментів (L07).
 - RET-H04 на clean пройшов із неповною відповіддю (ліміт є, спреду «not found»): кейс перевіряє одну підрядкову половину двочастинної відповіді.
 - Поза retrieval-шаром на lesson-04 впали CMP-004 (той самий обірваний `disputes.md#b1`), CMP-001 (D05: «EUR 15.00, no percentage fee») і FX-003-S. FX-003-S — хибне падіння: агент правильно написав «0.90%», а кейс шукає підрядок «0.9%». Це крихкість перевірки рівня 3, а не дефект агента; кейс варто перевести на числове порівняння.
+
+## Версія 2 набору (після рецензії ментора)
+За побажанням ментора кейси RET-H05, RET-H06 і RET-H09, які повторювали факти заняття (комісія SEPA, комісія за картку, вікно unauthorized_debit), замінено на вільні факти корпусу, яких на занятті не було:
+- RET-H05 — коли набирає чинності зміна тіру: «first calendar day» (`limits-operations.md`, ## Tier changes);
+- RET-H06 — строк розгляду скарги: «15 business days» (`complaints.md`, ## Acknowledgement and resolution);
+- RET-H09 — строк заміни втраченої картки: «five business days» (`cards.md`, ## Replacement).
+
+Решта 43 кейси не змінювались. Прогони версії 1 (`8fcf774bf7fc`) лишаються в `reports/` як історія.
+
+Прогноз для трьох нових кейсів до прогону `lesson-04` (на kb_broken кожен факт лежить у чанку цілим — `limits-operations.md#b5`, `complaints.md#b4`, `cards.md#b4`, але з top_k 1 приходить один чанк, і за збігом слів першим часто стає інший):
+- RET-H05 найімовірніше впаде: на запити зі словами «tier change» першим приходить `glossary.md#b5` (визначення «Tier»), а не `limits-operations.md#b5`;
+- RET-H06 найімовірніше впаде: першим приходить `complaints.md#b3` або `#b1` без строку, а «15 business days» лежить у `#b4`;
+- RET-H09 — невпевнено: на запит «card replacement days» першим приходить потрібний `cards.md#b4`, на «lost stolen card» — `security-policy.md#b2`;
+- на clean усі три пройдуть: kb_clean віддає секції цілими, top_k 4.
+
+Коміт із прогнозом версії 2: `<hash>`
+
+| Прогін | Профіль | Результат | Звіт |
+| --- | --- | --- | --- |
+| Baseline v2 | `clean` | <N/M> | `reports/…` |
+| Профіль заняття v2 | `lesson-04` | <N/M> | `reports/…` |
